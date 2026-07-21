@@ -37,10 +37,10 @@ model ScanReport {
   score       Int      // 0-100
   riskLevel   String   // LOW, MEDIUM, HIGH, CRITICAL
   
-  results     Json     // Raw scanner telemetry (SPF, DMARC missing, etc)
-  aiAnalysis  Json?    // Array of objects { issue: "", recommendation: "" }
+  reportModel Json     // IMMUTABLE SNAPSHOT: The complete ReportModel JSON
   
   createdAt   DateTime @default(now())
   
   @@index([domainId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
