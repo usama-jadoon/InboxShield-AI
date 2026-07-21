@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck, ShieldAlert, FileText, ArrowLeft, Bot, RefreshCw } from "lucide-react";
 import Link from 'next/link';
 
-export default function DomainDetail({ params }: { params: { domain: string } }) {
+export default async function DomainDetail(props: { params: Promise<{ domain: string }> }) {
+  const params = await props.params;
   const domain = params.domain;
 
   // Mocked engine report resolution
@@ -14,7 +15,7 @@ export default function DomainDetail({ params }: { params: { domain: string } })
       <Link href="/" className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Overview
       </Link>
-      
+
       <header className="mb-10 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white mb-2">{domain}</h1>
@@ -37,7 +38,7 @@ export default function DomainDetail({ params }: { params: { domain: string } })
           <Bot className="w-5 h-5 text-neutral-400" />
           AI Recommendations
         </h2>
-        
+
         {isHealthy ? (
           <Card className="bg-emerald-500/5 border-emerald-500/20">
             <CardContent className="p-6 flex items-start gap-4">
@@ -62,7 +63,7 @@ export default function DomainDetail({ params }: { params: { domain: string } })
                   </p>
                   <div className="bg-black/50 p-4 rounded-md border border-neutral-800/50">
                      <p className="text-xs text-neutral-500 mb-1">Technical Mitigation</p>
-                     <code className="text-sm text-neutral-300">Create a TXT record at _dmarc.{domain} with 'v=DMARC1; p=quarantine;'</code>
+                     <code className="text-sm text-neutral-300">Create a TXT record at _dmarc.{domain} with &apos;v=DMARC1; p=quarantine;&apos;</code>
                   </div>
                 </div>
               </CardContent>

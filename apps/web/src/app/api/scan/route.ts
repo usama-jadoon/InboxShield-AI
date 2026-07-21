@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { 
-  EngineOrchestrator, 
-  DnsScanner, 
+import {
+  EngineOrchestrator,
+  DnsScanner,
   SpfScanner,
-  DkimScanner, 
-  DmarcScanner, 
-  MxScanner, 
-  TlsScanner, 
+  DkimScanner,
+  DmarcScanner,
+  MxScanner,
+  TlsScanner,
   BlacklistScanner,
-  HeuristicAiProvider 
+  HeuristicAiProvider
 } from '@inboxshield/engine';
 
 const orchestrator = new EngineOrchestrator();
@@ -33,7 +33,10 @@ export async function POST(req: Request) {
     const recommendations = await aiProvider.analyze(report);
 
     return NextResponse.json({ report, recommendations });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: 'An unknown anomaly occurred' }, { status: 500 });
   }
 }

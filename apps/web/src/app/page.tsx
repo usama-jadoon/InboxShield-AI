@@ -1,8 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ShieldCheck, ShieldAlert, Cpu, Activity, Mail, Search, Globe, ChevronRight } from "lucide-react";
-import Link from 'next/link';
+import { ShieldAlert, Activity, Mail, Search, Globe, ChevronRight } from "lucide-react";
 
 export default function Dashboard() {
   return (
@@ -85,8 +84,8 @@ export default function Dashboard() {
             <CardContent className="p-6 flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg
-                  ${d.score >= 90 ? 'bg-emerald-500/10 text-emerald-500' 
-                    : d.score >= 70 ? 'bg-amber-500/10 text-amber-500' 
+                  ${d.score >= 90 ? 'bg-emerald-500/10 text-emerald-500'
+                    : d.score >= 70 ? 'bg-amber-500/10 text-amber-500'
                     : 'bg-rose-500/10 text-rose-500'}`}>
                   {d.score}
                 </div>

@@ -7,10 +7,10 @@ export class HistoryService {
    */
   static async saveSnapshot(db: PrismaClient, reportModel: ReportModel, workspaceId: string): Promise<string> {
     const domainName = reportModel.metadata.domain;
-    
+
     // Validate domain hierarchy mapping
     let domain = await db.domain.findUnique({ where: { domainName }});
-    
+
     if (!domain) {
       domain = await db.domain.create({
         data: { domainName, workspaceId }
@@ -23,7 +23,7 @@ export class HistoryService {
         domainId: domain.id,
         score: reportModel.executiveSummary.score,
         riskLevel: reportModel.executiveSummary.riskLevel,
-        reportModel: reportModel as any // Persisted entirely unmutated as raw JSON logic
+        reportModel: reportModel as unknown as object // Persisted entirely unmutated as raw JSON logic
       }
     });
 
@@ -36,14 +36,14 @@ export class HistoryService {
   static async getHistory(db: PrismaClient, params: { workspaceId: string, limit?: number, domainFilter?: string, riskFilter?: string }) {
     const { workspaceId, limit = 50, domainFilter, riskFilter } = params;
 
-    const whereClause: any = {
+    const whereClause: Record<string, unknown> = {
       domain: { workspaceId }
     };
 
     if (domainFilter) {
-       whereClause.domain.domainName = { contains: domainFilter, mode: 'insensitive' };
+       (whereClause.domain as Record<string,unknown>).domainName = { contains: domainFilter, mode: 'insensitive' };
     }
-    
+
     if (riskFilter) {
        whereClause.riskLevel = riskFilter;
     }
@@ -61,7 +61,7 @@ export class HistoryService {
       }
     });
 
-    return records.map(r => ({
+    return records.map((r: any) => ({
       id: r.id,
       domain: r.domain.domainName,
       score: r.score,
