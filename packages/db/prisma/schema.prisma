@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+// CORE TENANT & AUTHENTICATION
+// -------------------------------------------------------------
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  status    String   @default("ACTIVE") // ACTIVE, SUSPENDED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  users        User[]
+  apiKeys      ApiKey[]
+  domains      Domain[]
+  esps         EspAccount[]
+  emailLogs    EmailMessage[]
+  emailEvents  EmailEvent[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("VIEWER") // ADMIN, VIEWER
+  
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  prefix      String   // e.g. "sk_live_1234" for UI display
+  hash        String   @unique // SHA-256 for rapid lookup
+  
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+}
+
+// -------------------------------------------------------------
+// CONFIGURATION & INFRASTRUCTURE
+// -------------------------------------------------------------
+
+model Domain {
+  id          String   @id @default(cuid())
+  domainName  String   @unique
+  
+  spfStatus   String   @default("PENDING") // PENDING, PASS, FAIL
+  dkimStatus  String   @default("PENDING")
+  dmarcStatus String   @default("PENDING")
+  healthScore Float    @default(100.0)
+  
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  
+  messages    EmailMessage[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EspAccount {
+  id          String   @id @default(cuid())
+  provider    String   // SES, SENDGRID, MAILGUN, POSTMARK
+  credentials Json     // Encrypted via middleware before save
+  
+  status      String   @default("ACTIVE") // ACTIVE, PAUSED, RESTRICTED
+  baseWeight  Int      @default(100)
+  
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  
+  messages    EmailMessage[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// -------------------------------------------------------------
+// HIGH-VELOCITY TELEMETRY (PARTITION CANDIDATES)
+// -------------------------------------------------------------
+
+model EmailMessage {
+  id               String   @id @default(cuid())
+  recipientHash    String   // Masked PII
+  recipientDomain  String   // Indexed for OmniRoute e.g., 'gmail.com'
+  subject          String?
+  
+  status           String   @default("DISPATCHED") // DISPATCHED, QUEUED, ERROR
+  omniRouteData    Json?    // AI decision logging
+  
+  domainId         String
+  domain           Domain   @relation(fields: [domainId], references: [id], onDelete: Restrict)
+  
+  espId            String
+  espAccount       EspAccount @relation(fields: [espId], references: [id], onDelete: Restrict)
+  
+  tenantId         String
+  tenant           Tenant     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  
+  events           EmailEvent[]
+  
+  createdAt        DateTime @default(now())
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([recipientDomain])
+}
+
+model EmailEvent {
+  id              String   @id @default(cuid())
+  providerEventId String   // External ID from ESP webhook
+  eventType       String   // SENT, DELIVERED, BOUNCED, COMPLAINED
+  diagnosticCode  String?
+  
+  messageId       String
+  message         EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  tenantId        String
+  tenant          Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  occurredAt      DateTime @default(now())
+
+  @@unique([providerEventId, eventType]) // Idempotency protection lock
+  @@index([messageId])
+  @@index([tenantId, occurredAt(sort: Desc)])
+}

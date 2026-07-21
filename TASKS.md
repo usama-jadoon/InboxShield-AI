@@ -19,8 +19,8 @@
 - [x] 15-Decision-Log
 
 ## Implementation Phase
-- [ ] Prisma schema expansion & generation
-- [ ] Fastify Ingress API initialization
-- [ ] BullMQ configuration
-- [ ] Worker queue processing loop
+- \[x\] Prisma schema expansion & generation
+- [x] Fastify Ingress API initialization
+- [x] BullMQ configuration
+- \[x\] Worker queue processing loop
 - [ ] Next.js Auth & Tenant UI scaffolding
