@@ -12,8 +12,8 @@ export default async function DomainDetail(props: { params: Promise<{ domain: st
 
   return (
     <main className="p-8 max-w-5xl mx-auto w-full animate-in slide-in-from-bottom-4 duration-500">
-      <Link href="/" className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white mb-6 transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Overview
+      <Link href="/" className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white mb-6 transition-colors focus-ring rounded-md px-2 py-1 -ml-2">
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Back to Overview
       </Link>
 
       <header className="mb-10 flex items-center justify-between">
@@ -21,13 +21,13 @@ export default async function DomainDetail(props: { params: Promise<{ domain: st
           <h1 className="text-3xl font-bold tracking-tight text-white mb-2">{domain}</h1>
           <p className="text-neutral-400">Diagnostic snapshot generated just now.</p>
         </div>
-        <div className="flex gap-4">
-          <Button variant="outline" className="gap-2">
-            <RefreshCw className="w-4 h-4" />
+        <div className="flex gap-4 items-center">
+          <Button variant="outline" className="gap-2 focus-ring">
+            <RefreshCw className="w-4 h-4" aria-hidden="true" />
             Rescan
           </Button>
-          <Button className="gap-2">
-            <FileText className="w-4 h-4" />
+          <Button className="gap-2 focus-ring">
+            <FileText className="w-4 h-4" aria-hidden="true" />
             Export PDF
           </Button>
         </div>
@@ -35,14 +35,14 @@ export default async function DomainDetail(props: { params: Promise<{ domain: st
 
       <div className="mb-10">
         <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-          <Bot className="w-5 h-5 text-neutral-400" />
+          <Bot className="w-5 h-5 text-neutral-400" aria-hidden="true" />
           AI Recommendations
         </h2>
 
         {isHealthy ? (
           <Card className="bg-emerald-500/5 border-emerald-500/20">
             <CardContent className="p-6 flex items-start gap-4">
-              <ShieldCheck className="w-6 h-6 text-emerald-500 mt-1" />
+              <ShieldCheck className="w-6 h-6 text-emerald-500 mt-1" aria-hidden="true" />
               <div>
                 <h3 className="font-semibold text-emerald-400 mb-2">Optimal Configuration</h3>
                 <p className="text-neutral-300 text-sm leading-relaxed">
@@ -55,7 +55,7 @@ export default async function DomainDetail(props: { params: Promise<{ domain: st
           <div className="space-y-4">
             <Card className="bg-rose-500/5 border-rose-500/20">
               <CardContent className="p-6 flex items-start gap-4">
-                <ShieldAlert className="w-6 h-6 text-rose-500 mt-1" />
+                <ShieldAlert className="w-6 h-6 text-rose-500 mt-1" aria-hidden="true" />
                 <div>
                   <h3 className="font-semibold text-rose-400 mb-2">Missing DMARC Policy</h3>
                   <p className="text-neutral-300 text-sm leading-relaxed mb-4">
@@ -85,9 +85,9 @@ export default async function DomainDetail(props: { params: Promise<{ domain: st
               <div className="flex justify-between items-start">
                 <CardTitle className="text-base">{scan.title}</CardTitle>
                 {scan.passed ? (
-                  <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 text-xs font-semibold rounded mx-1">PASS</span>
+                  <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 text-xs font-semibold rounded mx-1" aria-label="Passed">PASS</span>
                 ) : (
-                  <span className="px-2 py-1 bg-rose-500/10 text-rose-500 text-xs font-semibold rounded mx-1">FAIL</span>
+                  <span className="px-2 py-1 bg-rose-500/10 text-rose-500 text-xs font-semibold rounded mx-1" aria-label="Failed">FAIL</span>
                 )}
               </div>
               <CardDescription className="font-mono text-xs mt-2">{scan.id}</CardDescription>
