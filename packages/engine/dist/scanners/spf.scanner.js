@@ -1,17 +1,17 @@
-import * as dns from 'node:dns/promises';
+import { DoHClient } from '../utils/doh.client';
 export class SpfScanner {
     id = 'auth:spf';
-    description = 'Validates Sender Policy Framework (SPF) TXT records and syntax.';
+    description = 'Validates Sender Policy Framework (SPF) TXT records and syntax (via DoH).';
     async execute(domain) {
         try {
-            const records = await dns.resolveTxt(domain);
-            const combinedRecords = records.map(arr => arr.join(''));
-            const spfRecords = combinedRecords.filter(record => record.toLowerCase().startsWith('v=spf1'));
+            const records = await DoHClient.resolve(domain, 'TXT');
+            const combinedRecords = records.map((r) => r.data ? r.data.replace(/"/g, '') : '');
+            const spfRecords = combinedRecords.filter((record) => record.toLowerCase().startsWith('v=spf1'));
             if (spfRecords.length === 0) {
                 return {
                     scannerId: this.id,
                     passed: false,
-                    scoreWeight: 30, // Extremely critical
+                    scoreWeight: 30,
                     rawData: combinedRecords,
                     error: "No SPF record found.",
                     flags: ['MISSING_SPF']
@@ -39,10 +39,7 @@ export class SpfScanner {
             };
         }
         catch (err) {
-            if (err.code === 'ENODATA' || err.code === 'ENOTFOUND') {
-                return { scannerId: this.id, passed: false, scoreWeight: 30, rawData: null, error: "No TXT records found.", flags: ['MISSING_SPF'] };
-            }
-            throw err;
+            return { scannerId: this.id, passed: false, scoreWeight: 30, rawData: null, error: `No TXT records found. ${err.message}`, flags: ['MISSING_SPF'] };
         }
     }
 }

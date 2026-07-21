@@ -1,17 +1,17 @@
-import * as dns from 'node:dns/promises';
+import { DoHClient } from '../utils/doh.client';
 export class DnsScanner {
     id = 'network:dns:a_record';
-    description = 'Validates physical resolution of the domain via A/AAAA records.';
+    description = 'Validates physical resolution of the domain via A/AAAA records (via DoH).';
     async execute(domain) {
         try {
-            const records = await dns.resolve(domain, 'A');
+            const records = await DoHClient.resolve(domain, 'A');
             const passed = records.length > 0;
             return {
                 scannerId: this.id,
                 passed,
-                scoreWeight: 20, // High penalty, if it doesn't resolve it doesn't exist
-                rawData: records,
-                error: passed ? undefined : "No A records found for domain. Domain may not physically resolve.",
+                scoreWeight: 20,
+                rawData: records.map((r) => r.data),
+                error: passed ? undefined : "No A records found for domain.",
                 flags: passed ? [] : ['NO_RESOLUTION']
             };
         }

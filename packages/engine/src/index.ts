@@ -4,19 +4,26 @@ import { EngineReport, ScannerResult, BaseScanner } from './core/types';
 // Built-in Scanners
 import { DnsScanner } from './scanners/dns.scanner';
 import { SpfScanner } from './scanners/spf.scanner';
+import { DkimScanner } from './scanners/dkim.scanner';
 import { DmarcScanner } from './scanners/dmarc.scanner';
 import { MxScanner } from './scanners/mx.scanner';
 import { TlsScanner } from './scanners/tls.scanner';
 import { BlacklistScanner } from './scanners/blacklist.scanner';
 
+// AI Providers
+import { AiProvider, AiRecommendation } from './ai/provider';
+import { HeuristicAiProvider } from './ai/heuristic.provider';
+
 export {
   EngineOrchestrator,
   DnsScanner,
   SpfScanner,
+  DkimScanner,
   DmarcScanner,
   MxScanner,
   TlsScanner,
-  BlacklistScanner
+  BlacklistScanner,
+  HeuristicAiProvider
 };
 
-export type { EngineReport, ScannerResult, BaseScanner };
+export type { EngineReport, ScannerResult, BaseScanner, AiProvider, AiRecommendation };
