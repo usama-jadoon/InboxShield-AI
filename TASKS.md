@@ -23,4 +23,4 @@
 - [x] Fastify Ingress API initialization
 - [x] BullMQ configuration
 - \[x\] Worker queue processing loop
-- [ ] Next.js Auth & Tenant UI scaffolding
+- [x] Next.js Auth & Tenant UI scaffolding
