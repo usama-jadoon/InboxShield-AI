@@ -8,4 +8,6 @@ import { MxScanner } from './scanners/mx.scanner';
 import { TlsScanner } from './scanners/tls.scanner';
 import { BlacklistScanner } from './scanners/blacklist.scanner';
 import { HeuristicAiProvider } from './ai/heuristic.provider';
-export { EngineOrchestrator, DnsScanner, SpfScanner, DkimScanner, DmarcScanner, MxScanner, TlsScanner, BlacklistScanner, HeuristicAiProvider };
+// Report Layer
+import { ReportBuilder } from './report/builder';
+export { EngineOrchestrator, DnsScanner, SpfScanner, DkimScanner, DmarcScanner, MxScanner, TlsScanner, BlacklistScanner, HeuristicAiProvider, ReportBuilder };

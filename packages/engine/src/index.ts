@@ -14,6 +14,10 @@ import { BlacklistScanner } from './scanners/blacklist.scanner';
 import { AiProvider, AiRecommendation } from './ai/provider';
 import { HeuristicAiProvider } from './ai/heuristic.provider';
 
+// Report Layer
+import { ReportBuilder } from './report/builder';
+import { ReportModel, PresentationSection } from './report/types';
+
 export {
   EngineOrchestrator,
   DnsScanner,
@@ -23,7 +27,16 @@ export {
   MxScanner,
   TlsScanner,
   BlacklistScanner,
-  HeuristicAiProvider
+  HeuristicAiProvider,
+  ReportBuilder
 };
 
-export type { EngineReport, ScannerResult, BaseScanner, AiProvider, AiRecommendation };
+export type { 
+  EngineReport, 
+  ScannerResult, 
+  BaseScanner, 
+  AiProvider, 
+  AiRecommendation,
+  ReportModel,
+  PresentationSection
+};
