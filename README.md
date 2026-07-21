@@ -1,66 +1,54 @@
 # InboxShield AI
 
-An enterprise-grade Deliverability Analysis Engine.
+InboxShield AI is an automated domain authentication and reputation monitoring platform. It is a monorepo built using Turbo, Next.js, and TypeScript.
 
-InboxShield makes the spam folder obsolete by providing modular, highly actionable diagnostic intelligence mapping your physical network architecture directly against the strictest modern sender requirements (Google, Microsoft, Yahoo).
-
-![Dashboard Placeholder](docs/assets/dashboard-placeholder.png)
+## Product Overview
+InboxShield AI actively scans and analyzes domain DNS records (SPF, DKIM, DMARC, MX) and reputation signals, generating actionable remediation reports and insights to ensure high email deliverability.
 
 ## Features
-- **Heuristic Delivery Scoring**: Deterministic 0-100 scoring based on raw network telemetry.
-- **Agnostic Architecture**: The AI parsing engine operates completely independently of the Next.js API boundaries allowing instant CLI tooling integration via `@inboxshield/engine`.
-- **Advanced Diagnostics**:
-  - Validates active DNS/MX resolutions.
-  - Dynamically detects deprecated Null-MX configurations via `RFC 7505`.
-  - Performs direct SMTP TLS handshakes on Port 25 validating live ciphers & protocol robustness.
-  - Recursively guesses DKIM tags and validates RSA Base64 key encryption thickness (2048-bit minimum limits).
-  - Validates DMARC deployment strings preventing phishing/spoofing exposure.
-  - Scans High-Confidence Blocklists concurrently.
-- **AI Analytics**: Generates real-time plain-english resolution paths natively based on diagnostic failure codes without expensive LLM bindings.
-- **History Rollups**: Immutably caches full analysis models within PostgreSQL utilizing `jsonb`, making re-exports perfectly reproducible.
+- Scalable Worker Queue (BullMQ, Redis) for webhook ingestion and task processing
+- Intelligent Scanning Engine checking configuration records (MX, SPF, DMARC, DNSSEC, etc.)
+- Web Dashboard natively built with Next.js App Router for analytics and reporting
+- Persistent Scan History via Prisma ORM and PostgreSQL
+- Automated Release Readiness Reports
 
-## Installation
+## Architecture 
+The workspace is managed by Turborepo holding multiple packages:
+- `apps/web`: Next.js 16 control plane dashboard
+- `apps/worker`: Fastify/BullMQ daemon processing webhooks and performing background DNS scanning
+- `packages/engine`: Core logic controlling the domain scanning orchestration
+- `packages/db`: Prisma database mappings for global repository access
 
-### Prerequisites
-- Node.JS >= 20.0.0
-- NPM >= 10.0.0
-- A local PostgreSQL database initialized
+## Tech Stack
+- Frontend: Next.js (React), TailwindCSS V4, Shadcn UI
+- Backend: Node.js, Fastify, BullMQ
+- Database/Cache: PostgreSQL (via Prisma), Redis (via ioredis)
+- Build System: Turborepo, TypeScript
 
-### Local Setup
-1. Clone the repository and install internal npm workspaces natively:
-   ```bash
-   npm install --workspaces
-   ```
+## Environment Setup
+Required `.env` variables include:
+- `DATABASE_URL`: PostgreSQL connection string (defaults generally expect standard pg URL formats for Prisma)
+- `REDIS_URL`: Connection string for BullMQ inside `apps/worker` (defaults to `redis://localhost:6379`)
 
-2. Duplicate environmental variables:
-   ```bash
-   cp .env.example .env
-   ```
-   *Update `DATABASE_URL` accurately linking into a local postgres server.*
+Please create a `.env` in the root (which is git-ignored) before you start.
 
-3. Execute migrations & generate local types:
-   ```bash
-   cd packages/db
-   npx prisma generate
-   ```
+## Installation Steps
+Ensure you are using at least Node.js 20.0.0.
 
-4. Bring the environment online:
-   ```bash
-   npm run dev --workspace=web
-   ```
+```bash
+git clone <repository-url>
+cd <repository-directory>
+npm install
+```
 
-## Configuration
+## Development Commands
+- `npm run dev`: Runs all development servers (Web & Worker) using turborepo
+- `npm run build`: Generates production builds using turbo
+- `npm run lint`: Checks for linting errors across packages
+- `npm run test`: Test execution suite
+- `turbo run typecheck`: Validating TS types (if implemented at package level)
 
-### Environment Variables
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL direct connection. |
-| `NEXTAUTH_SECRET` | 32-byte UUID mapping internal session hashing logic. |
-
-## Architecture V1
-* **Control Plane (`apps/web`)**: Next.js 15 App router handling purely data-table serialization, history fetching, React-PDF bindings, and human authorization.
-* **Engine (`packages/engine`)**: Agnostic Node TypeScript executable polling network sockets. Zero knowledge of UI or PostgreSQL.
-
-## Roadmap (Iterative V2 Focus)
-- **SaaS Conversion**: Migrating single configurations into multi-tenancy Workspace bindings.
-- **O‍mniRoute Pipelining**: Launching Fastify/BullMQ nodes replacing theoretical heuristic models via real-time external POST integrations dispatching straight logic to Amazon SES/Postmark.
+## Roadmap
+- Integrate proper implementations for DnssecScanner and WhoisScanner using third party APIs
+- Complete export pipeline generation (PDF / CSV) from ReportGenerator
+- Full automation testing suite and CI/CD pipelines

@@ -30,7 +30,7 @@ export const webhookWorker = new Worker(
   }
 );
 
-webhookWorker.on('completed', (job) => {
+webhookWorker.on('completed', (_job) => {
   // console.log(`Job ${job.id} completed!`);
 });
 

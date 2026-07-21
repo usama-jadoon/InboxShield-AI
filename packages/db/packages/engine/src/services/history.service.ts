@@ -61,7 +61,7 @@ export class HistoryService {
       }
     });
 
-    return records.map((r: any) => ({
+    return records.map((r: Record<string, any>) => ({
       id: r.id,
       domain: r.domain.domainName,
       score: r.score,

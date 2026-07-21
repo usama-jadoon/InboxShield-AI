@@ -85,16 +85,16 @@ export class ReportBuilder {
   private static buildAuthSections(report: EngineReport): PresentationSection[] {
     return [
       this.mapResultToSection('Sender Policy Framework (SPF)', report.scannerResults['auth:spf'], 'Missing or invalid SPF record.', (r) => `Valid SPF Configuration: ${(r.rawData as string) || 'Authorized'}`),
-      this.mapResultToSection('DomainKeys Identified Mail (DKIM)', report.scannerResults['auth:dkim'], 'Missing DKIM configuration.', (r: unknown) => { const obj = r as Record<string,any>; return `Valid DKIM. Selector: ${obj.rawData?.selector || 'Unknown'} (${obj.rawData?.type || 'rsa'})`; }),
-      this.mapResultToSection('DMARC Enforcement', report.scannerResults['auth:dmarc'], 'Missing DMARC policy.', (r: unknown) => { const obj = r as Record<string,any>; return `Valid DMARC Configuration: ${obj.rawData}`;})
+      this.mapResultToSection('DomainKeys Identified Mail (DKIM)', report.scannerResults['auth:dkim'], 'Missing DKIM configuration.', (r: ScannerResult) => { const obj = r as Record<string,any>; return `Valid DKIM. Selector: ${obj.rawData?.selector || 'Unknown'} (${obj.rawData?.type || 'rsa'})`; }),
+      this.mapResultToSection('DMARC Enforcement', report.scannerResults['auth:dmarc'], 'Missing DMARC policy.', (r: ScannerResult) => { const obj = r as Record<string,any>; return `Valid DMARC Configuration: ${obj.rawData}`;})
     ];
   }
 
   private static buildInfraSections(report: EngineReport): PresentationSection[] {
     return [
       this.mapResultToSection('DNS Resolution (A/AAAA)', report.scannerResults['network:dns:a_record'], 'Domain failed to physically resolve.', () => 'Domain resolves via DNS successfully.'),
-      this.mapResultToSection('Mail Exchange (MX)', report.scannerResults['network:mx'], 'Cannot receive email/bounces.', (r: unknown) => { const obj = r as Record<string,any>; return `${obj.rawData?.length || 0} active MX routes defined.`; }),
-      this.mapResultToSection('SMTP & TLS Security', report.scannerResults['network:smtp:tls'], 'MX Server failed STARTTLS negotiation.', (r: unknown) => { const obj = r as Record<string,any>; return `Secured via ${obj.rawData?.protocol} (${obj.rawData?.cipher}). Cert valid for ${obj.rawData?.daysRemaining} days.`; }),
+      this.mapResultToSection('Mail Exchange (MX)', report.scannerResults['network:mx'], 'Cannot receive email/bounces.', (r: ScannerResult) => { const obj = r as Record<string,any>; return `${obj.rawData?.length || 0} active MX routes defined.`; }),
+      this.mapResultToSection('SMTP & TLS Security', report.scannerResults['network:smtp:tls'], 'MX Server failed STARTTLS negotiation.', (r: ScannerResult) => { const obj = r as Record<string,any>; return `Secured via ${obj.rawData?.protocol} (${obj.rawData?.cipher}). Cert valid for ${obj.rawData?.daysRemaining} days.`; }),
       this.mapResultToSection('Domain Blacklists (RBL/DBL)', report.scannerResults['network:blacklist:domain'], 'Domain is actively blacklisted.', () => 'Domain is clean across major blocklists.')
     ];
   }

@@ -4,7 +4,7 @@ export class MxScanner {
   /**
    * Verifies if a domain is configured to receive email (Crucial for receiving bounces).
    */
-  static async verify(domain: string): Promise<{ passed: boolean; records: dns.MxRecord[]; error?: string }> {
+  static async verify(domain: string): Promise<{ passed: boolean; records: any[]; error?: string }> {
     try {
       const records = await dns.resolveMx(domain);
       

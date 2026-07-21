@@ -30,3 +30,10 @@ next-env.d.ts
 
 # prisma specific
 packages/db/node_modules/
+
+# turbo
+.turbo/
+
+# build output
+dist/
+
