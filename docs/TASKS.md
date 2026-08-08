@@ -35,7 +35,7 @@ Each unit is one commit. **Wait for explicit approval before starting each unit.
 | # | Unit | Objective (short) | Depends on | Status | Notes |
 |---|---|---|---|---|---|
 | P0-01 | Testing foundation | Vitest in `packages/engine`; behavior-based tests for all 7 scanners, orchestrator (safeExecute, scoring, risk thresholds), HeuristicAiProvider, ReportBuilder — all DNS/TLS mocked, no network | — | `DONE` | First unit. Commit: `test: establish Vitest foundation and scanner contract tests for @inboxshield/engine` |
-| P0-02 | `@inboxshield/db` package repair | Create `packages/db/src/index.ts` (PrismaClient singleton, `globalThis` caching); fix `main` → `src/index.ts` | — | `NOT_STARTED` | Prereq for P0-03 |
+| P0-02 | `@inboxshield/db` package repair | Create `packages/db/src/index.ts` (PrismaClient singleton, `globalThis` caching); fix `main` → `src/index.ts` | — | `DONE` | Commit: `fix: repair @inboxshield/db package entrypoint with PrismaClient singleton` |
 | P0-03 | DB migration baseline | Generate initial Prisma migration; primary path (real PG) or fallback path (deterministic diff SQL + mark `BLOCKED-on-DB`); never claim runtime verification that did not happen | P0-02 | `NOT_STARTED` | Requires PostgreSQL availability decision at execution time |
 | P0-04 | Dead-tree classification & cleanup | Migrate `HistoryService` → `packages/db/src/services/history.service.ts` (type-only `ReportModel` import); delete 5 dead-tree files; engine stays persistence-agnostic | P0-01, P0-02, P0-03 | `NOT_STARTED` | Deletes `packages/db/packages/`, `packages/db/apps/`, `packages/db/docs/`, `packages/db/package-lock.json` |
 | P0-05 | Type-safety enforcement | Remove `ignoreBuildErrors` from `next.config.ts`; fix surfaced errors; add `typecheck` task to `turbo.json` | P0-01 | `NOT_STARTED` | `turbo.json` currently has build/lint/dev only |
@@ -88,7 +88,7 @@ DNSSEC validation · WHOIS lookup · SMTP banner analysis · BIMI · MTA-STS · 
 
 - **Current branch:** `audit/inboxshield-saas-baseline`
 - **Baseline HEAD at audit time:** `17cd585` (per Phase 0 contract); later superseded by `d29bb61` (chore: establish clean SaaS development baseline)
-- **No P0 unit has been started.** All ten are `NOT_STARTED`, awaiting explicit user approval.
+- **P0-01 and P0-02 are `DONE`** (P0-01 commit `d9c364d`; P0-02 commit pending). Remaining units execute per contract.
 - This document is updated when a unit's status changes (after a commit lands and acceptance criteria are verified).
 
 ---
