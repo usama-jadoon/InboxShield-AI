@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { ReportModel } from '../report/types';
+import type { ReportModel } from '@inboxshield/engine';
 
 export class HistoryService {
   /**
