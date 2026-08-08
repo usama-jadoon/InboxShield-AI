@@ -34,7 +34,7 @@ Each unit is one commit. **Wait for explicit approval before starting each unit.
 
 | # | Unit | Objective (short) | Depends on | Status | Notes |
 |---|---|---|---|---|---|
-| P0-01 | Testing foundation | Vitest in `packages/engine`; behavior-based tests for all 7 scanners, orchestrator (safeExecute, scoring, risk thresholds), HeuristicAiProvider, ReportBuilder — all DNS/TLS mocked, no network | — | `NOT_STARTED` | First unit. Commit: `test: establish Vitest foundation and scanner contract tests for @inboxshield/engine` |
+| P0-01 | Testing foundation | Vitest in `packages/engine`; behavior-based tests for all 7 scanners, orchestrator (safeExecute, scoring, risk thresholds), HeuristicAiProvider, ReportBuilder — all DNS/TLS mocked, no network | — | `DONE` | First unit. Commit: `test: establish Vitest foundation and scanner contract tests for @inboxshield/engine` |
 | P0-02 | `@inboxshield/db` package repair | Create `packages/db/src/index.ts` (PrismaClient singleton, `globalThis` caching); fix `main` → `src/index.ts` | — | `NOT_STARTED` | Prereq for P0-03 |
 | P0-03 | DB migration baseline | Generate initial Prisma migration; primary path (real PG) or fallback path (deterministic diff SQL + mark `BLOCKED-on-DB`); never claim runtime verification that did not happen | P0-02 | `NOT_STARTED` | Requires PostgreSQL availability decision at execution time |
 | P0-04 | Dead-tree classification & cleanup | Migrate `HistoryService` → `packages/db/src/services/history.service.ts` (type-only `ReportModel` import); delete 5 dead-tree files; engine stays persistence-agnostic | P0-01, P0-02, P0-03 | `NOT_STARTED` | Deletes `packages/db/packages/`, `packages/db/apps/`, `packages/db/docs/`, `packages/db/package-lock.json` |
