@@ -18,8 +18,7 @@
     "test": "turbo run test"
   },
   "devDependencies": {
-    "prettier": "^3.3.3",
+    "prettier": "^3.9.6",
     "turbo": "latest"
-  },
-  "dependencies": {}
+  }
 }
