@@ -12,3 +12,7 @@ export { PrismaClient };
 export { DomainService, DomainError } from './services/domain.service';
 export type { DomainErrorCode } from './services/domain.service';
 export { WorkspaceService } from './services/workspace.service';
+
+// V1-03: scan persistence
+export { ScanService, ScanError } from './services/scan.service';
+export type { ScanErrorCode } from './services/scan.service';
