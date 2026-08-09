@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ShieldAlert, Activity, Mail, Search, Globe, ChevronRight } from "lucide-react";
+import { ShieldAlert, Activity, Mail, Search, Globe, ChevronRight, AlertCircle } from "lucide-react";
 
 export default function Dashboard() {
   return (
@@ -22,6 +22,14 @@ export default function Dashboard() {
           </Button>
         </div>
       </header>
+
+      {/* Demo data disclaimer */}
+      <div className="mb-8 flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-md">
+        <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" aria-hidden="true" />
+        <span className="text-sm text-amber-300">
+          <strong>Demo data — not connected to live scan results.</strong> All scores, domains, and incidents shown are hardcoded placeholders.
+        </span>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="col-span-1 md:col-span-2">
