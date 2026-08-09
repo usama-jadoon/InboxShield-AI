@@ -11,6 +11,7 @@ export const connection = new IORedis(process.env.REDIS_URL || 'redis://localhos
 });
 
 export const webhookQueueName = 'webhook-ingestion';
+export const scanQueueName = 'scan-execution';
 
 // Initialization of the Queue to push events onto from Fastify
 export const webhookQueue = new Queue(webhookQueueName, {
@@ -21,8 +22,21 @@ export const webhookQueue = new Queue(webhookQueueName, {
       type: 'exponential',
       delay: 1000,
     },
-    removeOnComplete: true, 
+    removeOnComplete: true,
     removeOnFail: 1000, // Keep 1000 failed jobs for introspection/DLQ
+  },
+});
+
+export const scanQueue = new Queue(scanQueueName, {
+  connection,
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: {
+      type: 'exponential',
+      delay: 2000,
+    },
+    removeOnComplete: true,
+    removeOnFail: 100,
   },
 });
 

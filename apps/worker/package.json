@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@inboxshield/db": "*",
+    "@inboxshield/engine": "*",
     "@inboxshield/types": "*",
     "bullmq": "^5.0.0",
     "fastify": "^5.11.3",
