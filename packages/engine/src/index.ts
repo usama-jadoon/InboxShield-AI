@@ -9,6 +9,7 @@ import { DmarcScanner } from './scanners/dmarc.scanner';
 import { MxScanner } from './scanners/mx.scanner';
 import { TlsScanner } from './scanners/tls.scanner';
 import { BlacklistScanner } from './scanners/blacklist.scanner';
+import { IpBlacklistScanner } from './scanners/ip.blacklist.scanner';
 
 // AI Providers
 import { AiProvider, AiRecommendation } from './ai/provider';
@@ -27,6 +28,7 @@ export {
   MxScanner,
   TlsScanner,
   BlacklistScanner,
+  IpBlacklistScanner,
   HeuristicAiProvider,
   ReportBuilder
 };
