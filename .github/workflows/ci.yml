@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Canonical dev URL per CLAUDE.md §9 — Prisma parse-time need (generate/validate
+      # do not make live connections, but the PostgreSQL service is provided for
+      # any future gate that does).
+      DATABASE_URL: postgresql://user:password@localhost:5432/inboxshield?schema=public
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: inboxshield
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies (clean, lockfile-driven)
+        run: npm ci
+
+      - name: Audit dependencies (fail on high/critical)
+        run: npm audit --audit-level=high
+
+      - name: Generate Prisma client
+        working-directory: packages/db
+        run: npx prisma generate
+
+      - name: Validate Prisma schema
+        working-directory: packages/db
+        run: npx prisma validate
+
+      - name: Build all workspaces
+        run: npx turbo run build
+
+      - name: Lint all workspaces
+        run: npx turbo run lint
+
+      - name: Typecheck all workspaces
+        run: npx turbo run typecheck
+
+      - name: Test all workspaces
+        run: npx turbo run test

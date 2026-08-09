@@ -47,19 +47,20 @@ export class EngineOrchestrator {
   }
 
   /**
-   * A resilient execution wrapper to ensure one failing plugin 
+   * A resilient execution wrapper to ensure one failing plugin
    * doesn't crash the entire orchestration.
    */
   private async safeExecute(scanner: BaseScanner, domain: string): Promise<ScannerResult> {
     try {
       return await scanner.execute(domain);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       return {
         scannerId: scanner.id,
-        passed: false,
+        passed: null, // scanner fault is an ERROR — no definitive PASS/FAIL verdict
         scoreWeight: 0,
         rawData: null,
-        error: `Scanner ${scanner.id} encountered a fatal execution error: ${err.message}`,
+        error: `Scanner ${scanner.id} encountered a fatal execution error: ${message}`,
         flags: ['SCANNER_FAULT']
       };
     }
@@ -71,9 +72,11 @@ export class EngineOrchestrator {
   private calculateGlobalScore(results: ScannerResult[]): { globalScore: number, riskLevel: EngineReport['riskLevel'] } {
     let score = 100;
     
-    // Each scanner returns a scoreWeight indicative of its penalty boundary
+    // Each scanner returns a scoreWeight indicative of its penalty boundary.
+    // Only a confirmed FAIL (passed === false) reduces the score — a null
+    // verdict (ERROR/UNSUPPORTED/DISABLED/PARTIAL) is NOT a failure.
     results.forEach(res => {
-      if (!res.passed) {
+      if (res.passed === false) {
         score -= res.scoreWeight;
       }
     });

@@ -1,12 +1,12 @@
-// Stubs for Phase 7 (Reports Export)
+// Stubs for Phase 7 (Reports Export) — NOT IMPLEMENTED
+// These methods explicitly throw to prevent fabricated output from being presented as real.
+
 export class ReportGenerator {
   static async exportToCSV(_domainId: string): Promise<string> {
-    // Queries all EmailLogs for a domain and streams to CSV format
-    return "id,status,recipient,timestamp\n1,DELIVERED,user@example.com,2026-07-21T00:00:00Z";
+    throw new Error('Report export not implemented — CSV export requires database wiring and CSV generation logic');
   }
 
   static async generatePDFSummary(_domainId: string): Promise<Buffer> {
-    // Utilizes puppeteer or pdfkit to generate a visual PDF of the DomainHealthReport
-    return Buffer.from("%PDF-1.4...");
+    throw new Error('Report export not implemented — PDF export requires database wiring and PDF generation logic');
   }
 }
