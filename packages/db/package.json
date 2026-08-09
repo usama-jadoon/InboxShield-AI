@@ -6,14 +6,16 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@prisma/client": "^5.10.0",
-    "@inboxshield/engine": "^0.1.0"
+    "@inboxshield/engine": "^0.1.0",
+    "@prisma/client": "^5.10.0"
   },
   "devDependencies": {
     "prisma": "^5.10.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^3.2.7"
   }
 }
