@@ -43,7 +43,7 @@ Each unit is one commit. **Wait for explicit approval before starting each unit.
 | P0-07 | Stub / fabricated-output quarantine | Create `ScanStatus` taxonomy (`PASS/FAIL/ERROR/UNSUPPORTED/DISABLED/PARTIAL`) in `apps/worker/src/scanners/types.ts`; DNSSEC/WHOIS → UNSUPPORTED; SMTP → PARTIAL; reports → NOT_IMPLEMENTED throw; dashboard → demo disclaimer. Contract: `passed: boolean | null` (`true` = PASS, `false` = FAIL, `null` = ERROR/UNSUPPORTED/DISABLED/PARTIAL). | P0-01 | `DONE` | Commit: `fix: quarantine fabricated stub outputs with truthful ScanStatus taxonomy` (`73ec67a`) — worker + web builds pass; no fabricated `passed: true/false` (grep-verified) |
 | P0-08 | `/api/scan` security hardening | Domain validation + SSRF defense + 30s timeout + safe errors + pluggable `RateLimiter` interface (`LocalMemoryRateLimiter` dev-only; Redis documented as production boundary) | P0-01, P0-05 | `DONE` | Commit: `fix: harden /api/scan with domain validation, SSRF defense, pluggable rate limiting, and safe errors` (`41937af`) — 37 web tests pass; monorepo build green; no `error.message` leakage (bare `catch {`), 30s timeout, 429+Retry-After, X-RateLimit-Remaining (grep-verified) |
 | P0-09 | Deterministic evidence contracts | Add `version: '1.0.0'` to `ReportModel.metadata`; JSDoc `@immutable` on `rawData`; shape contract tests for `ScannerResult`/`EngineReport`/`ReportModel` | P0-01 | `DONE` | Commit: `feat: freeze deterministic evidence contract with versioned ReportModel and shape tests` (`03a5399`) — `passed: boolean | null`, safeExecute returns `passed: null` + SCANNER_FAULT, scoring penalizes only `passed === false`, builder renders null verdicts as SKIPPED; contract tests (`core/types.test.ts` 10 + `report/types.test.ts` 8); engine 98 tests green, turbo build + typecheck green |
-| P0-10 | CI validation gates | `.github/workflows/ci.yml` with 8 gates: `npm ci`, `npm audit`, `prisma generate`, `prisma validate`, build, lint, typecheck, test | P0-01…P0-09 | `NOT_STARTED` | CI only — no CD/deploy steps |
+| P0-10 | CI validation gates | `.github/workflows/ci.yml` with 8 gates: `npm ci`, `npm audit`, `prisma generate`, `prisma validate`, build, lint, typecheck, test | P0-01…P0-09 | `DONE` | Commit: `ci: add GitHub Actions validation gates for build, lint, typecheck, test, and Prisma` (`7c8f941`) — all 8 gates verified locally: audit 0 vulnerabilities, lint clean, 135 tests green (engine 98 + web 37), turbo build/typecheck green, prisma generate/validate green |
 
 **Hard dependency rule (contract §4):**
 - P0-02 before P0-03 (importable package before migration)
@@ -88,7 +88,7 @@ DNSSEC validation · WHOIS lookup · SMTP banner analysis · BIMI · MTA-STS · 
 
 - **Current branch:** `audit/inboxshield-saas-baseline`
 - **Baseline HEAD at audit time:** `17cd585` (per Phase 0 contract); later superseded by `d29bb61` (chore: establish clean SaaS development baseline)
-- **P0-01 … P0-09 are `DONE`** — commit evidence: P0-01 `d9c364d`, P0-02 `8a7a0d8`, P0-03 `4410a79`, P0-04+P0-05 `85df30e`, P0-06 `7c2967e`, P0-07 `73ec67a`, P0-08 `41937af`, P0-09 `03a5399`. Remaining unit (P0-10) executes per contract.
+- **P0-01 … P0-10 are `DONE`** — commit evidence: P0-01 `d9c364d`, P0-02 `8a7a0d8`, P0-03 `4410a79`, P0-04+P0-05 `85df30e`, P0-06 `7c2967e`, P0-07 `73ec67a`, P0-08 `41937af`, P0-09 `03a5399`, P0-10 `7c8f941`. Phase 0 execution complete.
 - This document is updated when a unit's status changes (after a commit lands and acceptance criteria are verified).
 
 ---
