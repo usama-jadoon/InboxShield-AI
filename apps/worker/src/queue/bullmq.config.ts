@@ -1,7 +1,12 @@
 import { Queue, QueueEvents } from 'bullmq';
 import IORedis from 'ioredis';
 
-const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+/**
+ * Shared Redis connection for BullMQ and the RedisRateLimiter (V1-06).
+ * `maxRetriesPerRequest: null` is required by BullMQ; it also prevents the
+ * limiter's INCR/EXPIRE/TTL commands from being retried into a broken pipe.
+ */
+export const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: null,
 });
 
