@@ -81,10 +81,13 @@ describe('EngineOrchestrator', () => {
     expect(report.scannerResults['auth:spf'].flags).toEqual(['SCANNER_FAULT']);
     expect(report.scannerResults['auth:spf'].error).toContain('boom');
     expect(report.scannerResults['auth:spf'].scoreWeight).toBe(0);
+    // A scanner fault is an ERROR — it must carry passed: null, never a
+    // fabricated boolean.
+    expect(report.scannerResults['auth:spf'].passed).toBe(null);
     // The good scanner still produced a real result.
     expect(report.scannerResults['network:dns:a_record'].passed).toBe(true);
-    // SCANNER_FAULT carries passed:false but scoreWeight 0, so the current
-    // implementation does not penalize the global score for a fault.
+    // SCANNER_FAULT carries passed:null with scoreWeight 0, so it never
+    // penalizes the global score.
     expect(report.globalScore).toBe(100);
   });
 

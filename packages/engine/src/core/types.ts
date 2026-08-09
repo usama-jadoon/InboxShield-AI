@@ -3,10 +3,18 @@
  */
 export interface ScannerResult {
   scannerId: string;
-  passed: boolean;
+  /**
+   * Verdict: true ONLY for a confirmed PASS; false ONLY for a confirmed FAIL;
+   * null when there is no definitive verdict (ERROR / UNSUPPORTED / DISABLED /
+   * PARTIAL). Never fabricate a boolean for an unperformed check.
+   */
+  passed: boolean | null;
   /** Internal confidence or risk weight calculation per scanner (0-100) */
   scoreWeight: number;
-  /** The raw technical data fetched (e.g. DNS string, RBL array) */
+  /**
+   * The raw technical data fetched (e.g. DNS string, RBL array).
+   * @immutable Once created by a scanner, rawData must not be mutated. Copy before modifying.
+   */
   rawData: unknown;
   /** A human readable error string if passed = false */
   error?: string;

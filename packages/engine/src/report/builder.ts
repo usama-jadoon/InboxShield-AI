@@ -59,8 +59,20 @@ export class ReportBuilder {
       };
     }
 
-    let statusLabel: PresentationSection['statusLabel'] = result.passed ? 'PASS' : 'FAIL';
-    let statusColor: PresentationSection['statusColor'] = result.passed ? 'emerald' : 'rose';
+    // `passed` is boolean | null per the evidence contract: true ONLY for a
+    // confirmed PASS, false ONLY for a confirmed FAIL, null for
+    // ERROR/UNSUPPORTED/DISABLED/PARTIAL. A null verdict must not render as FAIL.
+    const passed = result.passed === true;
+    let statusLabel: PresentationSection['statusLabel'] = passed
+      ? 'PASS'
+      : result.passed === false
+        ? 'FAIL'
+        : 'SKIPPED';
+    let statusColor: PresentationSection['statusColor'] = passed
+      ? 'emerald'
+      : result.passed === false
+        ? 'rose'
+        : 'neutral';
 
     // Edge case evaluation based on flags
     if (result.flags.some((f: string) => f.includes('WARNING') || f.includes('SOON') || f.includes('MONITORING'))) {
@@ -74,10 +86,10 @@ export class ReportBuilder {
     return {
       id: result.scannerId,
       title,
-      passed: result.passed,
+      passed,
       statusLabel,
       statusColor,
-      description: result.passed ? successExtractor(result) : (result.error || fallbackDesc),
+      description: passed ? successExtractor(result) : (result.error || fallbackDesc),
       technicalDetail: result.flags.length > 0 ? `Flags: ${result.flags.join(', ')}` : 'No flags raised.'
     };
   }
