@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
-    "@inboxshield/engine": "workspace:*"
+    "@inboxshield/engine": "^0.1.0"
   },
   "devDependencies": {
     "prisma": "^5.10.0",
