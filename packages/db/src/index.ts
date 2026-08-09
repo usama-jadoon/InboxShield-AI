@@ -16,3 +16,7 @@ export { WorkspaceService } from './services/workspace.service';
 // V1-03: scan persistence
 export { ScanService, ScanError } from './services/scan.service';
 export type { ScanErrorCode } from './services/scan.service';
+
+// V1-05: dashboard aggregate stats
+export { DashboardService } from './services/dashboard.service';
+export type { DomainSummary, WorkspaceStats } from './services/dashboard.service';
