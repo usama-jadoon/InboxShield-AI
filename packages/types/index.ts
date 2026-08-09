@@ -18,6 +18,20 @@ export interface NormalizedWebhookEvent {
 }
 
 /**
+ * Email event persisted from normalized webhook data (V1-08).
+ */
+export interface EmailEvent {
+  id: string;
+  messageId: string;
+  provider: string;
+  eventType: string;
+  email: string;
+  domainId: string | null;
+  timestamp: Date;
+  diagnostics: string | null;
+}
+
+/**
  * Shared rate-limiting contract (V1-06).
  *
  * Both the web app (`apps/web/src/lib/rate-limit.ts`) and the worker

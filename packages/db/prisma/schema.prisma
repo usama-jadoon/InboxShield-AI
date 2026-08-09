@@ -20,12 +20,13 @@ model Workspace {
 model Domain {
   id          String   @id @default(cuid())
   domainName  String   @unique
-  
+
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   reports     ScanReport[]
-  
+  emailEvents EmailEvent[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -44,6 +45,24 @@ model ScanReport {
 
   @@index([domainId, createdAt(sort: Desc)])
   @@index([createdAt(sort: Desc)])
+}
+
+model EmailEvent {
+  id           String   @id @default(cuid())
+  messageId    String   @unique
+  provider     String   // SES | SENDGRID | MAILGUN
+  eventType    String   // DELIVERY | BOUNCE | COMPLAINT | OPEN
+  email        String   // recipient email
+  domainId     String?  // optional link to Domain
+  domain       Domain?  @relation(fields: [domainId], references: [id], onDelete: SetNull)
+  timestamp    DateTime
+  diagnostics  String?  @db.Text
+
+  createdAt    DateTime @default(now())
+
+  @@index([domainId, timestamp(sort: Desc)])
+  @@index([eventType, timestamp(sort: Desc)])
+  @@index([messageId])
 }
 
 // ---- NextAuth v4 (PrismaAdapter) models ----
