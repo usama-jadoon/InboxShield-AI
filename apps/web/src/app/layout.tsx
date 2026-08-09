@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
   title: "InboxShield AI",
   description: "Enterprise Email Deliverability Intelligence",
 };
 
+/**
+ * Minimal root layout. The authenticated app chrome (Sidebar) lives in the
+ * `(dashboard)` route group layout so auth-facing pages (e.g. /login) render
+ * full-screen without it. URLs are unaffected by the route group.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -14,11 +18,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="antialiased bg-black text-white flex min-h-screen">
-        <Sidebar />
-        <div className="flex-1 overflow-x-hidden min-w-0">
-          {children}
-        </div>
+      <body className="antialiased bg-black text-white min-h-screen">
+        {children}
       </body>
     </html>
   );
