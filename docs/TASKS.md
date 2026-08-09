@@ -41,7 +41,7 @@ Each unit is one commit. **Wait for explicit approval before starting each unit.
 | P0-05 | Type-safety enforcement | Remove `ignoreBuildErrors` from `next.config.ts`; fix surfaced errors; add `typecheck` task to `turbo.json` | P0-01 | `DONE` | Commit: `feat: implement P0-04 HistoryService migration + P0-05 type-safety enforcement` (`85df30e`) — combined with P0-04 |
 | P0-06 | Scanner unification plan + IP-RBL migration | Create `IpBlacklistScanner` in engine (migrated from worker, unique value); write `docs/SCANNER_UNIFICATION_REPORT.md`; DO NOT delete worker scanners | P0-01 | `DONE` | Commit: `feat: migrate IP-RBL scanner to engine and establish scanner unification report` (`7c2967e`) — engine tests green (80 pass), engine build passes, export added |
 | P0-07 | Stub / fabricated-output quarantine | Create `ScanStatus` taxonomy (`PASS/FAIL/ERROR/UNSUPPORTED/DISABLED/PARTIAL`) in `apps/worker/src/scanners/types.ts`; DNSSEC/WHOIS → UNSUPPORTED; SMTP → PARTIAL; reports → NOT_IMPLEMENTED throw; dashboard → demo disclaimer. Contract: `passed: boolean | null` (`true` = PASS, `false` = FAIL, `null` = ERROR/UNSUPPORTED/DISABLED/PARTIAL). | P0-01 | `DONE` | Commit: `fix: quarantine fabricated stub outputs with truthful ScanStatus taxonomy` (`73ec67a`) — worker + web builds pass; no fabricated `passed: true/false` (grep-verified) |
-| P0-08 | `/api/scan` security hardening | Domain validation + SSRF defense + 30s timeout + safe errors + pluggable `RateLimiter` interface (`LocalMemoryRateLimiter` dev-only; Redis documented as production boundary) | P0-01, P0-05 | `NOT_STARTED` | Fixes the `error.message` leak on 500 |
+| P0-08 | `/api/scan` security hardening | Domain validation + SSRF defense + 30s timeout + safe errors + pluggable `RateLimiter` interface (`LocalMemoryRateLimiter` dev-only; Redis documented as production boundary) | P0-01, P0-05 | `DONE` | Commit: `fix: harden /api/scan with domain validation, SSRF defense, pluggable rate limiting, and safe errors` (`41937af`) — 37 web tests pass; monorepo build green; no `error.message` leakage (bare `catch {`), 30s timeout, 429+Retry-After, X-RateLimit-Remaining (grep-verified) |
 | P0-09 | Deterministic evidence contracts | Add `version: '1.0.0'` to `ReportModel.metadata`; JSDoc `@immutable` on `rawData`; shape contract tests for `ScannerResult`/`EngineReport`/`ReportModel` | P0-01 | `NOT_STARTED` | Freezes the evidence snapshot contract |
 | P0-10 | CI validation gates | `.github/workflows/ci.yml` with 8 gates: `npm ci`, `npm audit`, `prisma generate`, `prisma validate`, build, lint, typecheck, test | P0-01…P0-09 | `NOT_STARTED` | CI only — no CD/deploy steps |
 
@@ -88,7 +88,7 @@ DNSSEC validation · WHOIS lookup · SMTP banner analysis · BIMI · MTA-STS · 
 
 - **Current branch:** `audit/inboxshield-saas-baseline`
 - **Baseline HEAD at audit time:** `17cd585` (per Phase 0 contract); later superseded by `d29bb61` (chore: establish clean SaaS development baseline)
-- **P0-01 … P0-07 are `DONE`** — commit evidence: P0-01 `d9c364d`, P0-02 `8a7a0d8`, P0-03 `4410a79`, P0-04+P0-05 `85df30e`, P0-06 `7c2967e`, P0-07 `73ec67a`. Remaining units (P0-08, P0-09, P0-10) execute per contract.
+- **P0-01 … P0-08 are `DONE`** — commit evidence: P0-01 `d9c364d`, P0-02 `8a7a0d8`, P0-03 `4410a79`, P0-04+P0-05 `85df30e`, P0-06 `7c2967e`, P0-07 `73ec67a`, P0-08 `41937af`. Remaining units (P0-09, P0-10) execute per contract.
 - This document is updated when a unit's status changes (after a commit lands and acceptance criteria are verified).
 
 ---
