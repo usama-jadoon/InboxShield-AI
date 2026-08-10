@@ -55,4 +55,32 @@ export class ScanService {
       take: limit,
     });
   }
+
+  /**
+   * Fetch a single scan report by id, scoped to a domain (V1-10 export).
+   * Returns null if the report does not exist or does not belong to the domain.
+   */
+  static async getById(
+    client: PrismaClient,
+    domainId: string,
+    scanId: string,
+  ): Promise<ScanReport | null> {
+    return client.scanReport.findFirst({
+      where: { id: scanId, domainId },
+    });
+  }
+
+  /**
+   * Fetch the most recent scan report for a domain (V1-10 PDF export).
+   * Returns null when no reports exist for the domain.
+   */
+  static async getLatestForDomain(
+    client: PrismaClient,
+    domainId: string,
+  ): Promise<ScanReport | null> {
+    return client.scanReport.findFirst({
+      where: { domainId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

@@ -89,10 +89,33 @@
 
 ### 2.5 Export endpoints
 
-| Endpoint | Status |
-|---|---|
-| `GET /api/reports/:id/export.pdf` | PLANNED — `@react-pdf/renderer` installed but unused |
-| `GET /api/reports/:id/export.csv` | PLANNED |
+**Status:** IMPLEMENTED (V1-10) — real PDF via `@react-pdf/renderer`, real CSV from scan history.
+
+#### `GET /api/export/pdf`
+
+Workspace-scoped real PDF export of a scan report's immutable `ReportModel` snapshot.
+
+| Query | Type | Required | Description |
+|---|---|---|---|
+| `domainId` | `string` | yes | Domain id registered in the caller's workspace |
+| `scanId` | `string` | no | Specific scan to export; omitted → latest scan for the domain |
+
+- **Auth:** session cookie (`next-auth.session-token`) → workspace resolve → domain ownership check.
+- **Responses:** `200` → `application/pdf`, `Content-Disposition: attachment; filename="inboxshield-<domain>-report.pdf"`; `401` unauthenticated; `404` domain not in workspace or no scan report; `500` render failure (generic body, no internal detail leaked).
+- **Evidence:** output buffer begins with real `%PDF-` magic bytes (asserted in `src/lib/export/pdf.test.ts`).
+
+#### `GET /api/export/csv`
+
+Workspace-scoped CSV export of scan history (RFC 4180).
+
+| Query | Type | Required | Description |
+|---|---|---|---|
+| `domainId` | `string` | yes | Domain id registered in the caller's workspace |
+| `limit` | `number` | no | Rows to export, default `50`, max `100` |
+
+- **Auth:** session cookie → workspace resolve → domain ownership check.
+- **Responses:** `200` → `text/csv; charset=utf-8`, `Content-Disposition: attachment; filename="inboxshield-<domain>-history.csv"`; `401` unauthenticated; `404` domain not in workspace.
+- **Columns:** `scanId,score,riskLevel,createdAt` (most-recent-first, RFC 4180 escaping).
 
 ---
 
@@ -162,11 +185,12 @@ The following is the **target** API surface. None of these exist today.
 
 ### 4.3 Reports & Export
 
+**Implemented endpoints (V1-10):** see §2.5 for full contracts.
+
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/api/reports/:id` | Fetch a single `ScanReport` |
-| `GET` | `/api/reports/:id/export.pdf` | PDF export via `@react-pdf/renderer` |
-| `GET` | `/api/reports/:id/export.csv` | CSV export from scan history |
+| `GET` | `/api/export/pdf?domainId=&scanId=` | PDF export via `@react-pdf/renderer` (real `%PDF-` bytes) |
+| `GET` | `/api/export/csv?domainId=&limit=` | CSV export from scan history (RFC 4180) |
 
 ### 4.4 Security requirements on all V1 endpoints
 

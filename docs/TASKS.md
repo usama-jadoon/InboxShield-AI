@@ -68,7 +68,7 @@ Referenced for visibility only. Do **not** begin any of these during Phase 0.
 | V1-07 | Scanner unification: worker scanners replaced by canonical `@inboxshield/engine` calls | `DONE` |
 | V1-08 | Worker real webhook processing (normalize ESP events → `EmailEvent` in DB) | `DONE` |
 | V1-09 | Scheduled scans (BullMQ repeatable jobs) | `DONE` |
-| V1-10 | Real PDF export (`@react-pdf/renderer`) + real CSV export | `NOT_STARTED` |
+| V1-10 | Real PDF export (`@react-pdf/renderer`) + real CSV export | `DONE` | Commit: `feat(web,v1-10): real PDF export via @react-pdf/renderer and CSV export from scan history`. Acceptance criteria: real `%PDF-` magic bytes asserted in `apps/web/src/lib/export/pdf.test.ts` (no stubs — `renderToBuffer` output); RFC 4180 CSV from `ScanService.listByDomain`; workspace-scoped routes `GET /api/export/pdf?domainId=&scanId=` + `GET /api/export/csv?domainId=&limit=` with session auth, domain-ownership 404s, and safe 500s. `ScanService.getById`/`getLatestForDomain` added to `packages/db`. All gates green: typecheck 6/6, test 6/6 (web 125), lint 0 errors, build 4/4, audit 0 vulnerabilities |
 | V1-11 | Structured logging (pino/winston, correlation IDs) | `NOT_STARTED` |
 | V1-12 | Health checks (`/health` verifies DB + Redis) | `NOT_STARTED` |
 

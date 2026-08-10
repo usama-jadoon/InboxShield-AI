@@ -97,3 +97,62 @@ describe('ScanService.listByDomain', () => {
     );
   });
 });
+
+describe('ScanService.getById', () => {
+  it('queries by id AND domainId (workspace-scoped)', async () => {
+    const report = { id: 'sr-10', domainId: DOMAIN_ID, score: 90, riskLevel: 'LOW' };
+    const mockFindFirst = vi.fn().mockResolvedValue(report);
+
+    const result = await ScanService.getById(
+      { scanReport: { findFirst: mockFindFirst } } as never,
+      DOMAIN_ID,
+      'sr-10',
+    );
+
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: { id: 'sr-10', domainId: DOMAIN_ID },
+    });
+    expect(result?.id).toBe('sr-10');
+  });
+
+  it('returns null when report does not exist', async () => {
+    const mockFindFirst = vi.fn().mockResolvedValue(null);
+
+    const result = await ScanService.getById(
+      { scanReport: { findFirst: mockFindFirst } } as never,
+      DOMAIN_ID,
+      'nonexistent',
+    );
+
+    expect(result).toBeNull();
+  });
+});
+
+describe('ScanService.getLatestForDomain', () => {
+  it('queries by domainId with descending createdAt and take 1', async () => {
+    const report = { id: 'sr-latest', score: 95, riskLevel: 'LOW' };
+    const mockFindFirst = vi.fn().mockResolvedValue(report);
+
+    const result = await ScanService.getLatestForDomain(
+      { scanReport: { findFirst: mockFindFirst } } as never,
+      DOMAIN_ID,
+    );
+
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: { domainId: DOMAIN_ID },
+      orderBy: { createdAt: 'desc' },
+    });
+    expect(result?.id).toBe('sr-latest');
+  });
+
+  it('returns null when no reports exist', async () => {
+    const mockFindFirst = vi.fn().mockResolvedValue(null);
+
+    const result = await ScanService.getLatestForDomain(
+      { scanReport: { findFirst: mockFindFirst } } as never,
+      DOMAIN_ID,
+    );
+
+    expect(result).toBeNull();
+  });
+});
