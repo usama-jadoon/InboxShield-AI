@@ -1,4 +1,4 @@
-import { Queue, QueueEvents } from 'bullmq';
+import { Queue, QueueEvents, RepeatOptions } from 'bullmq';
 import IORedis from 'ioredis';
 
 /**
@@ -12,6 +12,19 @@ export const connection = new IORedis(process.env.REDIS_URL || 'redis://localhos
 
 export const webhookQueueName = 'webhook-ingestion';
 export const scanQueueName = 'scan-execution';
+export const scheduledScanQueueName = 'scheduled-scans';
+
+/**
+ * Default repeat options for scheduled scans.
+ * Runs daily at 02:00 UTC by default; configurable via env.
+ */
+export const scheduledScanRepeatOptions: RepeatOptions = {
+  pattern: process.env.SCHEDULED_SCAN_CRON || '0 2 * * *', // Daily at 02:00 UTC
+  tz: 'UTC',
+  // Ensure we don't create duplicate repeatable jobs on worker restart
+  endDate: undefined,
+  limit: undefined,
+};
 
 // Initialization of the Queue to push events onto from Fastify
 export const webhookQueue = new Queue(webhookQueueName, {
@@ -40,4 +53,89 @@ export const scanQueue = new Queue(scanQueueName, {
   },
 });
 
+/**
+ * Scheduled scans queue — uses repeatable jobs for recurring domain scans.
+ * Each repeatable job represents a domain that should be scanned on a schedule.
+ */
+export const scheduledScanQueue = new Queue(scheduledScanQueueName, {
+  connection,
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+    removeOnComplete: true,
+    removeOnFail: 100,
+  },
+});
+
 export const queueEvents = new QueueEvents(webhookQueueName, { connection });
+export const scheduledScanQueueEvents = new QueueEvents(scheduledScanQueueName, { connection });
+
+/**
+ * Register a domain for recurring scans.
+ * Creates a repeatable job that will fire on the configured schedule.
+ *
+ * @param domain - The domain to scan
+ * @param workspaceId - The workspace the domain belongs to
+ * @param options - Optional repeat options (defaults to daily at 02:00 UTC)
+ */
+export async function registerScheduledScan(
+  domain: string,
+  workspaceId: string,
+  options?: RepeatOptions
+): Promise<string> {
+  const repeatOpts = options || scheduledScanRepeatOptions;
+
+  const jobId = `scheduled-scan:${workspaceId}:${domain}`;
+
+  await scheduledScanQueue.add(
+    'execute-scheduled-scan',
+    { domain, workspaceId },
+    {
+      jobId,
+      repeat: repeatOpts,
+      // Ensure idempotency: if jobId exists, update its repeat pattern
+      removeOnComplete: true,
+      removeOnFail: 100,
+    }
+  );
+
+  return jobId;
+}
+
+/**
+ * Remove a scheduled scan for a domain.
+ */
+export async function removeScheduledScan(
+  domain: string,
+  workspaceId: string
+): Promise<void> {
+  const jobId = `scheduled-scan:${workspaceId}:${domain}`;
+  await scheduledScanQueue.removeRepeatableByKey(jobId);
+}
+
+/**
+ * Get all registered scheduled scans.
+ */
+export async function getScheduledScans(): Promise<Array<{
+  jobId: string;
+  domain: string;
+  workspaceId: string;
+  nextRun: Date | null;
+}>> {
+  const repeatable = await scheduledScanQueue.getRepeatableJobs();
+
+  return repeatable
+    .filter(r => r.key?.startsWith('scheduled-scan:'))
+    .map(r => {
+      const parts = r.key?.split(':') || [];
+      return {
+        jobId: r.key || '',
+        domain: parts[2] || '',
+        workspaceId: parts[1] || '',
+        nextRun: r.next ? new Date(r.next) : null,
+      };
+    });
+}

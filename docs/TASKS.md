@@ -64,10 +64,10 @@ Referenced for visibility only. Do **not** begin any of these during Phase 0.
 | V1-03 | Scan persistence (`/api/scan` writes `ScanReport` via `packages/db`) | `NOT_STARTED` |
 | V1-04 | Scan history on domain detail (real `ReportModel` from DB) | `NOT_STARTED` |
 | V1-05 | Dashboard from DB (real scores, real incidents, real domain list) | `NOT_STARTED` |
-| V1-06 | `RedisRateLimiter` production implementation behind the `RateLimiter` interface | `NOT_STARTED` |
-| V1-07 | Scanner unification: worker scanners replaced by canonical `@inboxshield/engine` calls | `NOT_STARTED` |
-| V1-08 | Worker real webhook processing (normalize ESP events → `EmailEvent` in DB) | `NOT_STARTED` |
-| V1-09 | Scheduled scans (BullMQ repeatable jobs) | `NOT_STARTED` |
+| V1-06 | `RedisRateLimiter` production implementation behind the `RateLimiter` interface | `DONE` |
+| V1-07 | Scanner unification: worker scanners replaced by canonical `@inboxshield/engine` calls | `DONE` |
+| V1-08 | Worker real webhook processing (normalize ESP events → `EmailEvent` in DB) | `DONE` |
+| V1-09 | Scheduled scans (BullMQ repeatable jobs) | `DONE` |
 | V1-10 | Real PDF export (`@react-pdf/renderer`) + real CSV export | `NOT_STARTED` |
 | V1-11 | Structured logging (pino/winston, correlation IDs) | `NOT_STARTED` |
 | V1-12 | Health checks (`/health` verifies DB + Redis) | `NOT_STARTED` |

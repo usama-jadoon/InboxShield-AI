@@ -1,8 +1,9 @@
 import Fastify from 'fastify';
 import { webhookQueue, connection } from './queue/bullmq.config';
 import { RedisRateLimiter } from './lib/rate-limit';
-import './queue/webhook.worker'; // Initializes the polling worker instance
-import './queue/scan.worker';   // Initializes the canonical engine scan worker (V1-07)
+import './queue/webhook.worker';   // Initializes the webhook ingestion worker
+import './queue/scan.worker';      // Initializes the canonical engine scan worker (V1-07)
+import './queue/scheduled.scan.worker'; // Initializes the scheduled scans worker (V1-09)
 
 const server = Fastify({ logger: true });
 
