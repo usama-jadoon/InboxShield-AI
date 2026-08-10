@@ -14,6 +14,7 @@ import {
 } from '@inboxshield/engine';
 import { PrismaClient, ScanService } from '@inboxshield/db';
 import { scheduledScanQueueName, connection } from '../queue/bullmq.config';
+import { logger } from '../lib/logger';
 
 const prisma = new PrismaClient();
 const aiProvider = new HeuristicAiProvider();
@@ -29,8 +30,9 @@ export const scheduledScanWorker = new Worker(
   scheduledScanQueueName,
   async (job: Job) => {
     const { domain, workspaceId } = job.data as { domain: string; workspaceId: string };
+    const log = logger.child({ correlationId: job.id, domain, workspaceId });
 
-    console.log(`Processing Scheduled Scan Job ${job.id} for domain: ${domain} (workspace: ${workspaceId})`);
+    log.info('processing scheduled scan');
 
     // Verify domain exists and belongs to workspace
     const dbDomain = await prisma.domain.findFirst({
@@ -38,7 +40,7 @@ export const scheduledScanWorker = new Worker(
     });
 
     if (!dbDomain) {
-      console.warn(`Scheduled scan for ${domain} (workspace ${workspaceId}) skipped — domain not found`);
+      log.warn('scheduled scan skipped — domain not found in workspace');
       return { status: 'skipped', reason: 'domain_not_found' };
     }
 
@@ -61,7 +63,7 @@ export const scheduledScanWorker = new Worker(
     const recommendations = await aiProvider.analyze(report);
     const reportModel = ReportBuilder.build(report, recommendations);
 
-    console.log(`Scheduled scan ${job.id} completed for ${domain}: score=${report.globalScore}, risk=${report.riskLevel}`);
+    log.info({ score: report.globalScore, riskLevel: report.riskLevel }, 'scheduled scan completed');
 
     // Persist the immutable evidence snapshot via the shared ScanService
     const scanReport = await ScanService.persist(prisma, dbDomain.id, reportModel);
@@ -86,5 +88,5 @@ scheduledScanWorker.on('completed', (_job) => {
 });
 
 scheduledScanWorker.on('failed', (job, err) => {
-  console.error(`Scheduled Scan Job ${job?.id} failed with error: ${err.message}`);
+  logger.error({ jobId: job?.id, error: err.message }, 'scheduled scan job failed');
 });

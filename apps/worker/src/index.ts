@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { webhookQueue, connection } from './queue/bullmq.config';
 import { RedisRateLimiter } from './lib/rate-limit';
+import { logger } from './lib/logger';
 import './queue/webhook.worker';   // Initializes the webhook ingestion worker
 import './queue/scan.worker';      // Initializes the canonical engine scan worker (V1-07)
 import './queue/scheduled.scan.worker'; // Initializes the scheduled scans worker (V1-09)
@@ -48,7 +49,7 @@ server.post('/v1/webhooks/:esp', async (request, reply) => {
 const start = async () => {
   try {
     await server.listen({ port: 3001, host: '0.0.0.0' });
-    console.log('InboxShield Data Plane Gateway running on port 3001');
+    logger.info({ port: 3001 }, 'InboxShield Data Plane Gateway running');
   } catch (err) {
     server.log.error(err);
     process.exit(1);

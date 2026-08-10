@@ -1,13 +1,15 @@
 import { Worker, Job } from 'bullmq';
 import { EngineOrchestrator, DnsScanner, SpfScanner, DkimScanner, DmarcScanner, MxScanner, TlsScanner, BlacklistScanner, IpBlacklistScanner } from '@inboxshield/engine';
 import { scanQueueName, connection } from './bullmq.config';
+import { logger } from '../lib/logger';
 
 export const scanWorker = new Worker(
   scanQueueName,
   async (job: Job) => {
     const { domain } = job.data as { domain: string };
+    const log = logger.child({ correlationId: job.id, domain });
 
-    console.log(`Processing Scan Job ${job.id} for domain: ${domain}`);
+    log.info('processing scan');
 
     // Initialize engine orchestrator with canonical scanners
     const orchestrator = new EngineOrchestrator();
@@ -23,7 +25,7 @@ export const scanWorker = new Worker(
     // Execute canonical engine scan
     const report = await orchestrator.analyzeDomain(domain);
 
-    console.log(`Scan ${job.id} completed for ${domain}: score=${report.globalScore}, risk=${report.riskLevel}`);
+    log.info({ score: report.globalScore, riskLevel: report.riskLevel }, 'scan completed');
 
     return {
       status: 'completed',
@@ -40,9 +42,9 @@ export const scanWorker = new Worker(
 );
 
 scanWorker.on('completed', (_job) => {
-  // console.log(`Scan Job ${job.id} completed!`);
+  // Structured log on completion is handled inline above.
 });
 
 scanWorker.on('failed', (job, err) => {
-  console.error(`Scan Job ${job?.id} failed with error: ${err.message}`);
+  logger.error({ jobId: job?.id, error: err.message }, 'scan job failed');
 });

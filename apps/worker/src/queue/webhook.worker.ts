@@ -2,6 +2,7 @@ import { Worker, Job } from 'bullmq';
 import { PrismaClient } from '@inboxshield/db';
 import { webhookQueueName, connection } from './bullmq.config';
 import { normalizeWebhook } from '../lib/webhook.normalize';
+import { logger } from '../lib/logger';
 
 const prisma = new PrismaClient();
 
@@ -16,20 +17,21 @@ export const webhookWorker = new Worker(
   webhookQueueName,
   async (job: Job) => {
     const { esp, rawPayload } = job.data as { esp: string; rawPayload: any };
+    const log = logger.child({ correlationId: job.id, esp });
 
-    console.log(`Processing Webhook Job ${job.id} for ESP: ${esp}`);
+    log.info('processing webhook');
 
     // Normalize raw payload to unified DTO
     let normalized: ReturnType<typeof normalizeWebhook>;
     try {
       normalized = normalizeWebhook(esp, rawPayload);
     } catch (err) {
-      console.error(`Job ${job.id} normalization failed:`, err);
+      log.error({ error: err instanceof Error ? err.message : err }, 'webhook normalization failed');
       return { status: 'failed', reason: 'normalization_error' };
     }
 
     if (normalized.length === 0) {
-      console.log(`Job ${job.id} produced 0 events, skipping`);
+      log.info('webhook produced 0 events, skipping');
       return { status: 'skipped', reason: 'no_events' };
     }
 
@@ -51,7 +53,7 @@ export const webhookWorker = new Worker(
       skipDuplicates: true,
     });
 
-    console.log(`Job ${job.id} inserted ${result.count} EmailEvent rows`);
+    log.info({ inserted: result.count }, 'webhook inserted EmailEvent rows');
 
     return { status: 'processed', count: result.count };
   },
@@ -86,5 +88,5 @@ webhookWorker.on('completed', (_job) => {
 });
 
 webhookWorker.on('failed', (job, err) => {
-  console.error(`Webhook Job ${job?.id} failed with error: ${err.message}`);
+  logger.error({ jobId: job?.id, error: err.message }, 'webhook job failed');
 });
