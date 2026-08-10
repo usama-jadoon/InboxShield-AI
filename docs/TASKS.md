@@ -59,11 +59,11 @@ Referenced for visibility only. Do **not** begin any of these during Phase 0.
 
 | Item | Objective | Status |
 |---|---|---|
-| V1-01 | Real authentication (OAuth Google/GitHub via NextAuth, sessions, `middleware.ts` route protection) | `NOT_STARTED` |
-| V1-02 | Domain CRUD API (`POST/GET/DELETE /api/domains`, workspace-scoped) | `NOT_STARTED` |
-| V1-03 | Scan persistence (`/api/scan` writes `ScanReport` via `packages/db`) | `NOT_STARTED` |
-| V1-04 | Scan history on domain detail (real `ReportModel` from DB) | `NOT_STARTED` |
-| V1-05 | Dashboard from DB (real scores, real incidents, real domain list) | `NOT_STARTED` |
+| V1-01 | Real authentication (OAuth Google/GitHub via NextAuth, sessions, `middleware.ts` route protection) | `DONE` | Commit: `30a06ec feat(web): implement V1-01 real authentication — OAuth + DB sessions (AC-01)` |
+| V1-02 | Domain CRUD API (`POST/GET/DELETE /api/domains`, workspace-scoped) | `DONE` | Commit: `32594c6 feat(db,web): implement workspace-scoped domain CRUD (AC-02)` |
+| V1-03 | Scan persistence (`/api/scan` writes `ScanReport` via `packages/db`) | `DONE` | Commit: `28eda62 feat(db,scan): persist ScanReport snapshots and wire /api/scan to DB (V1-03)` |
+| V1-04 | Scan history on domain detail (real `ReportModel` from DB) | `DONE` | Commit: `750f65d feat(api): scan history endpoint with workspace-scoped access (V1-04)` |
+| V1-05 | Dashboard from DB (real scores, real incidents, real domain list) | `DONE` | Commit: `14711fb feat: V1-05 dashboard from DB — real scores, incidents, domain list` |
 | V1-06 | `RedisRateLimiter` production implementation behind the `RateLimiter` interface | `DONE` |
 | V1-07 | Scanner unification: worker scanners replaced by canonical `@inboxshield/engine` calls | `DONE` |
 | V1-08 | Worker real webhook processing (normalize ESP events → `EmailEvent` in DB) | `DONE` |
