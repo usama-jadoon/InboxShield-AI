@@ -121,17 +121,28 @@ Workspace-scoped CSV export of scan history (RFC 4180).
 
 ## 3. Worker API (Fastify, port 3001)
 
-### 3.1 `GET /health` — Liveness probe
+### 3.1 `GET /health` — Liveness/readiness probe
 
-**Status:** IMPLEMENTED
+**Status:** IMPLEMENTED (V1-12 — verifies DB + Redis)
 
-**Response 200**
+Probes both data-plane dependencies before reporting healthy:
+- **Redis** via `PING` on the shared BullMQ connection
+- **PostgreSQL** via `SELECT 1` on the Prisma client
+
+Each probe is race-guarded by a 2s timeout so a hung dependency cannot block `/health`. A probe result is `'up'` or `'down'` — never fabricated.
+
+**Response 200 (all dependencies healthy)**
 ```json
-{ "status": "ok", "timestamp": "2026-08-08T12:00:00.000Z" }
+{ "status": "ok", "db": "up", "redis": "up", "timestamp": "2026-08-08T12:00:00.000Z" }
+```
+
+**Response 503 (any dependency down or timed out)**
+```json
+{ "status": "degraded", "db": "up", "redis": "down", "timestamp": "2026-08-08T12:00:00.000Z" }
 ```
 
 **Notes:**
-- Does not currently verify DB/Redis connectivity (target: health check for DB + Redis per PRD).
+- Added in V1-12. Probe logic unit-tested via fakes (`apps/worker/src/lib/health.test.ts`); live 200 response requires a running Redis and PostgreSQL.
 
 ### 3.2 `POST /v1/webhooks/:esp` — ESP event ingestion
 

@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { webhookQueue, connection } from './queue/bullmq.config';
 import { RedisRateLimiter } from './lib/rate-limit';
+import { checkHealth, isHealthy } from './lib/health';
 import { logger } from './lib/logger';
 import './queue/webhook.worker';   // Initializes the webhook ingestion worker
 import './queue/scan.worker';      // Initializes the canonical engine scan worker (V1-07)
@@ -20,8 +21,18 @@ const webhookLimiter = new RedisRateLimiter(connection, {
   keyPrefix: 'inboxshield:webhook-ratelimit',
 });
 
-server.get('/health', async () => {
-  return { status: 'ok', timestamp: new Date().toISOString() };
+server.get('/health', async (_request, reply) => {
+  // V1-12: verify DB + Redis connectivity before reporting healthy.
+  const checks = await checkHealth();
+  const healthy = isHealthy(checks);
+  const statusCode = healthy ? 200 : 503;
+
+  return reply.status(statusCode).send({
+    status: healthy ? 'ok' : 'degraded',
+    db: checks.db,
+    redis: checks.redis,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 server.post('/v1/webhooks/:esp', async (request, reply) => {
