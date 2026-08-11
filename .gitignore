@@ -37,3 +37,6 @@ packages/db/node_modules/
 # build output
 dist/
 
+# ASC orchestrator execution-team registry (repository-local, never committed)
+.project-os/
+

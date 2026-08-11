@@ -59,18 +59,18 @@ Referenced for visibility only. Do **not** begin any of these during Phase 0.
 
 | Item | Objective | Status |
 |---|---|---|
-| V1-01 | Real authentication (OAuth Google/GitHub via NextAuth, sessions, `middleware.ts` route protection) | `NOT_STARTED` |
-| V1-02 | Domain CRUD API (`POST/GET/DELETE /api/domains`, workspace-scoped) | `NOT_STARTED` |
-| V1-03 | Scan persistence (`/api/scan` writes `ScanReport` via `packages/db`) | `NOT_STARTED` |
-| V1-04 | Scan history on domain detail (real `ReportModel` from DB) | `NOT_STARTED` |
-| V1-05 | Dashboard from DB (real scores, real incidents, real domain list) | `NOT_STARTED` |
-| V1-06 | `RedisRateLimiter` production implementation behind the `RateLimiter` interface | `NOT_STARTED` |
-| V1-07 | Scanner unification: worker scanners replaced by canonical `@inboxshield/engine` calls | `NOT_STARTED` |
-| V1-08 | Worker real webhook processing (normalize ESP events → `EmailEvent` in DB) | `NOT_STARTED` |
-| V1-09 | Scheduled scans (BullMQ repeatable jobs) | `NOT_STARTED` |
-| V1-10 | Real PDF export (`@react-pdf/renderer`) + real CSV export | `NOT_STARTED` |
-| V1-11 | Structured logging (pino/winston, correlation IDs) | `NOT_STARTED` |
-| V1-12 | Health checks (`/health` verifies DB + Redis) | `NOT_STARTED` |
+| V1-01 | Real authentication (OAuth Google/GitHub via NextAuth, sessions, `middleware.ts` route protection) | `DONE` | Commit: `30a06ec feat(web): implement V1-01 real authentication — OAuth + DB sessions (AC-01)` |
+| V1-02 | Domain CRUD API (`POST/GET/DELETE /api/domains`, workspace-scoped) | `DONE` | Commit: `32594c6 feat(db,web): implement workspace-scoped domain CRUD (AC-02)` |
+| V1-03 | Scan persistence (`/api/scan` writes `ScanReport` via `packages/db`) | `DONE` | Commit: `28eda62 feat(db,scan): persist ScanReport snapshots and wire /api/scan to DB (V1-03)` |
+| V1-04 | Scan history on domain detail (real `ReportModel` from DB) | `DONE` | Commit: `750f65d feat(api): scan history endpoint with workspace-scoped access (V1-04)` |
+| V1-05 | Dashboard from DB (real scores, real incidents, real domain list) | `DONE` | Commit: `14711fb feat: V1-05 dashboard from DB — real scores, incidents, domain list` |
+| V1-06 | `RedisRateLimiter` production implementation behind the `RateLimiter` interface | `DONE` |
+| V1-07 | Scanner unification: worker scanners replaced by canonical `@inboxshield/engine` calls | `DONE` |
+| V1-08 | Worker real webhook processing (normalize ESP events → `EmailEvent` in DB) | `DONE` |
+| V1-09 | Scheduled scans (BullMQ repeatable jobs) | `DONE` |
+| V1-10 | Real PDF export (`@react-pdf/renderer`) + real CSV export | `DONE` | Commit: `feat(web,v1-10): real PDF export via @react-pdf/renderer and CSV export from scan history`. Acceptance criteria: real `%PDF-` magic bytes asserted in `apps/web/src/lib/export/pdf.test.ts` (no stubs — `renderToBuffer` output); RFC 4180 CSV from `ScanService.listByDomain`; workspace-scoped routes `GET /api/export/pdf?domainId=&scanId=` + `GET /api/export/csv?domainId=&limit=` with session auth, domain-ownership 404s, and safe 500s. `ScanService.getById`/`getLatestForDomain` added to `packages/db`. All gates green: typecheck 6/6, test 6/6 (web 125), lint 0 errors, build 4/4, audit 0 vulnerabilities |
+| V1-11 | Structured logging (pino/winston, correlation IDs) | `DONE` | Commit: `feat(worker,web,v1-11): structured pino logging with correlation IDs`. pino installed in worker + web; `apps/worker/src/lib/logger.ts` + `apps/web/src/lib/logger.ts` base loggers named `inboxshield-worker` / `inboxshield-web`; all BullMQ job handlers create `logger.child({ correlationId: job.id, ... })` (webhook.worker, scan.worker, scheduled.scan.worker); Fastify gateway startup uses `logger.info({ port })`; web API routes use `request.log` (pino-backed with `reqId`). Tests: `logger.test.ts` in both apps (6 tests) assert JSON emission, correlationId propagation, level gating, structured error fields. All gates green: typecheck 6/6, test 6/6 (web 127 + worker 25), lint 0 errors, build 4/4, audit 0 vulnerabilities. `apps/web/src/app/error.tsx` retains `console.error` — it is a `'use client'` boundary where pino (Node-only) cannot be imported |
+| V1-12 | Health checks (`/health` verifies DB + Redis) | `DONE` | Commit: `feat(worker,v1-12): /health verifies DB and Redis connectivity`. `apps/worker/src/lib/health.ts` probes Redis (`PING`) and PostgreSQL (`SELECT 1`) with a 2s race-guarded timeout per probe — never a fabricated success; `/health` returns 200 `{ status:'ok', db, redis, timestamp }` when both are up, 503 `{ status:'degraded', ... }` otherwise. Tests: `health.test.ts` (6 tests) cover both-up, each-down, both-down, hung-dependency timeout, and late-settle immutability via fakes. All gates green: typecheck 6/6, test 6/6 (worker 31 + web 127), lint 0 errors, build 4/4, audit 0 vulnerabilities. Runtime 200 not exercised (no local Redis/PG in this environment); degraded path is unit-tested and probe logic verified with fakes |
 
 **Source:** `docs/PRD.md` §5 V1 TARGET.
 
