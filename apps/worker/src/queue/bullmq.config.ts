@@ -112,8 +112,21 @@ export async function removeScheduledScan(
   domain: string,
   workspaceId: string
 ): Promise<void> {
-  const jobId = `scheduled-scan:${workspaceId}:${domain}`;
-  await scheduledScanQueue.removeRepeatableByKey(jobId);
+  const logicalJobId = `scheduled-scan:${workspaceId}:${domain}`;
+
+  // Find the repeatable job by matching the logical jobId in opts.repeat.jobId
+  const repeatable = await scheduledScanQueue.getRepeatableJobs();
+  for (const r of repeatable) {
+    if (!r.key || r.name !== 'execute-scheduled-scan') continue;
+    const generatedJobKey = `repeat:${r.key}:${r.next}`;
+    const job = await scheduledScanQueue.getJob(generatedJobKey);
+    if (job?.opts?.repeat?.jobId === logicalJobId) {
+      await scheduledScanQueue.removeRepeatableByKey(r.key);
+      return;
+    }
+  }
+  // Fallback: try removing by logical jobId (works if BullMQ maps it)
+  await scheduledScanQueue.removeRepeatableByKey(logicalJobId);
 }
 
 /**
@@ -127,15 +140,26 @@ export async function getScheduledScans(): Promise<Array<{
 }>> {
   const repeatable = await scheduledScanQueue.getRepeatableJobs();
 
-  return repeatable
-    .filter(r => r.key?.startsWith('scheduled-scan:'))
-    .map(r => {
-      const parts = r.key?.split(':') || [];
-      return {
-        jobId: r.key || '',
-        domain: parts[2] || '',
-        workspaceId: parts[1] || '',
-        nextRun: r.next ? new Date(r.next) : null,
-      };
+  const results = [];
+  for (const r of repeatable) {
+    if (!r.key || r.name !== 'execute-scheduled-scan') continue;
+
+    // BullMQ's getRepeatableJobs returns only metadata (key, pattern, next run).
+    // The logical jobId we provided (scheduled-scan:${workspaceId}:${domain})
+    // is stored in opts.repeat.jobId of the generated repeat job.
+    // We must fetch that job to extract it.
+    const generatedJobKey = `repeat:${r.key}:${r.next}`;
+    const job = await scheduledScanQueue.getJob(generatedJobKey);
+    const logicalJobId = job?.opts?.repeat?.jobId || r.key;
+
+    const parts = logicalJobId.split(':');
+    results.push({
+      jobId: logicalJobId,
+      domain: parts[2] || '',
+      workspaceId: parts[1] || '',
+      nextRun: r.next ? new Date(r.next) : null,
     });
+  }
+
+  return results;
 }

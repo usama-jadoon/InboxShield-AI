@@ -19,6 +19,7 @@ vi.mock('bullmq', async () => {
       add: vi.fn().mockResolvedValue({ id: 'test-job-1' }),
       removeRepeatableByKey: vi.fn().mockResolvedValue(true),
       getRepeatableJobs: vi.fn().mockResolvedValue([]),
+      getJob: vi.fn().mockResolvedValue(null),
       close: vi.fn().mockResolvedValue(undefined),
     })),
     Worker: vi.fn().mockImplementation(() => ({
@@ -107,8 +108,35 @@ describe('Scheduled Scans Queue Configuration (V1-09)', () => {
   });
 
   describe('removeScheduledScan', () => {
-    it('should call queue.removeRepeatableByKey with correct jobId', async () => {
+    it('should find and remove the repeatable job by matching logical jobId', async () => {
       const { scheduledScanQueue, removeScheduledScan } = await import('./bullmq.config');
+
+      const mockRepeatableJobs = [
+        { key: 'a1b2c3d4e5f67890', name: 'execute-scheduled-scan', next: Date.now() + 86400000 },
+        { key: 'f6e5d4c3b2a19876', name: 'other-job', next: Date.now() + 43200000 },
+      ];
+
+      const mockGetJob = vi.fn()
+        .mockResolvedValueOnce({
+          opts: { repeat: { jobId: 'scheduled-scan:workspace-123:example.com' } }
+        })
+        .mockResolvedValueOnce(null);
+
+      (scheduledScanQueue.getRepeatableJobs as any).mockResolvedValue(mockRepeatableJobs);
+      (scheduledScanQueue.getJob as any).mockImplementation(mockGetJob);
+      (scheduledScanQueue.removeRepeatableByKey as any).mockResolvedValue(true);
+
+      await removeScheduledScan('example.com', 'workspace-123');
+
+      // Should call removeRepeatableByKey with the BullMQ internal key
+      expect(scheduledScanQueue.removeRepeatableByKey).toHaveBeenCalledWith('a1b2c3d4e5f67890');
+    });
+
+    it('should fallback to logical jobId when no match found', async () => {
+      const { scheduledScanQueue, removeScheduledScan } = await import('./bullmq.config');
+
+      (scheduledScanQueue.getRepeatableJobs as any).mockResolvedValue([]);
+      (scheduledScanQueue.removeRepeatableByKey as any).mockResolvedValue(true);
 
       await removeScheduledScan('example.com', 'workspace-123');
 
@@ -117,16 +145,29 @@ describe('Scheduled Scans Queue Configuration (V1-09)', () => {
   });
 
   describe('getScheduledScans', () => {
-    it('should return formatted scheduled scans from repeatable jobs', async () => {
+    it('should return formatted scheduled scans from repeatable jobs (real BullMQ shape)', async () => {
       const { scheduledScanQueue, getScheduledScans } = await import('./bullmq.config');
 
+      // Real BullMQ returns md5-hashed keys, not the logical jobId.
+      // The logical jobId is in opts.repeat.jobId of the generated repeat job.
       const mockRepeatableJobs = [
-        { key: 'scheduled-scan:workspace-123:example.com', next: Date.now() + 86400000 },
-        { key: 'scheduled-scan:workspace-456:test.com', next: Date.now() + 43200000 },
-        { key: 'other-job:some-key', next: Date.now() + 10000 }, // Should be filtered out
+        { key: 'a1b2c3d4e5f67890', name: 'execute-scheduled-scan', next: Date.now() + 86400000 },
+        { key: 'f6e5d4c3b2a19876', name: 'execute-scheduled-scan', next: Date.now() + 43200000 },
+        { key: 'other-job-key', name: 'other-job', next: Date.now() + 10000 }, // Should be filtered out
       ];
 
+      // Mock getJob to return the logical jobId for each repeatable key
+      const mockGetJob = vi.fn()
+        .mockResolvedValueOnce({
+          opts: { repeat: { jobId: 'scheduled-scan:workspace-123:example.com' } }
+        })
+        .mockResolvedValueOnce({
+          opts: { repeat: { jobId: 'scheduled-scan:workspace-456:test.com' } }
+        })
+        .mockResolvedValueOnce(null);
+
       (scheduledScanQueue.getRepeatableJobs as any).mockResolvedValue(mockRepeatableJobs);
+      (scheduledScanQueue.getJob as any).mockImplementation(mockGetJob);
 
       const result = await getScheduledScans();
 
@@ -159,15 +200,34 @@ describe('Scheduled Scans Queue Configuration (V1-09)', () => {
       const { scheduledScanQueue, getScheduledScans } = await import('./bullmq.config');
 
       const mockRepeatableJobs = [
-        { key: 'scheduled-scan:workspace-123:example.com', next: null },
+        { key: 'a1b2c3d4e5f67890', name: 'execute-scheduled-scan', next: null },
       ];
 
       (scheduledScanQueue.getRepeatableJobs as any).mockResolvedValue(mockRepeatableJobs);
+      (scheduledScanQueue.getJob as any).mockResolvedValue({
+        opts: { repeat: { jobId: 'scheduled-scan:workspace-123:example.com' } }
+      });
 
       const result = await getScheduledScans();
 
       expect(result).toHaveLength(1);
       expect(result[0].nextRun).toBeNull();
+    });
+
+    it('should fallback to key when getJob returns null', async () => {
+      const { scheduledScanQueue, getScheduledScans } = await import('./bullmq.config');
+
+      const mockRepeatableJobs = [
+        { key: 'fallback-key', name: 'execute-scheduled-scan', next: Date.now() + 86400000 },
+      ];
+
+      (scheduledScanQueue.getRepeatableJobs as any).mockResolvedValue(mockRepeatableJobs);
+      (scheduledScanQueue.getJob as any).mockResolvedValue(null);
+
+      const result = await getScheduledScans();
+
+      expect(result).toHaveLength(1);
+      expect(result[0].jobId).toBe('fallback-key');
     });
   });
 });
