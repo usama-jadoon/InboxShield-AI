@@ -1,5 +1,3 @@
-npm notice run inboxshield-ai@0.1.0 npx
-npm notice run prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script
 -- CreateTable
 CREATE TABLE "Workspace" (
     "id" TEXT NOT NULL,
